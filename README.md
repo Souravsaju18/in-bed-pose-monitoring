@@ -1,26 +1,35 @@
----
+# Multimodal In-Bed Pose Estimation with Risk-Based Monitoring for Elderly Care
 
-# 🎤 If examiner asks now
+## Overview
+This project presents a real-time system for in-bed pose estimation using computer vision. It detects patient posture and tracks duration to provide basic risk monitoring.
 
-You say:
+## Features
+- Real-time pose detection using MediaPipe
+- Posture classification (Supine, Left, Right)
+- Duration tracking
+- Risk monitoring (PURI, RCI, CQS)
+- Fall detection
+- Voice alerts
+- Patient report generation
 
-> “We’ve also published our implementation and results on GitHub.”
+## Tech Stack
+- Python
+- OpenCV
+- MediaPipe
+- NumPy
+- Matplotlib
+- pyttsx3
 
-💥 That’s a **big boost**
+## How to Run
+```
+pip install -r requirements.txt
+python main.py
+```
 
----
+## Output
+- Real-time monitoring dashboard
+- Movement graph
+- Patient report (PDF)
 
-# 🚀 FINAL LEVEL (optional but powerful)
-
-Next I can help you:
-- Add demo image in README 🔥  
-- Make it look like top GitHub project  
-- Add badges  
-
----
-
-# 💯 FINAL STATUS
-
-```text
-Project ready ❌
-→ Project + GitHub + Presentation ready ✅🔥
+## Note
+This system focuses on pose estimation with a basic risk monitoring layer and is not intended for clinical use.
