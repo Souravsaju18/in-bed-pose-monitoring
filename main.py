@@ -117,7 +117,7 @@ def classify_posture(features):
 # ----------------------------------------
 # Video Input
 # ----------------------------------------
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture("bedtest.mp4")
 
 if not cap.isOpened():
     print("Error opening video")
@@ -251,7 +251,130 @@ while True:
     if cv2.waitKey(30) == 27:
         break
 
-# (rest of your report code unchanged)
+
+# ----------------------------------------
+# SAVE GRAPH
+# ----------------------------------------
+plt.figure()
+plt.plot(time_log, movement_log)
+plt.xlabel("Time (seconds)")
+plt.ylabel("Movement Count")
+plt.title("Patient Movement Over Time")
+
+graph_path = "movement_graph.png"
+plt.savefig(graph_path)
+plt.close()
+
+# ----------------------------------------
+# REPORT SCREEN
+# ----------------------------------------
+total_time = sum(pose_time.values())
+
+report_screen = np.zeros((500, 800, 3), dtype=np.uint8)
+report_screen[:] = (30, 30, 30)
+
+y = 60
+
+cv2.putText(report_screen, "PATIENT REPORT", (250, y),
+            cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+y += 60
+
+cv2.putText(report_screen, f"Total Time: {total_time:.2f} sec", (50, y),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+y += 40
+
+for p, t in pose_time.items():
+    cv2.putText(report_screen, f"{p}: {t:.2f} sec", (70, y),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+    y += 30
+
+y += 20
+cv2.putText(report_screen, f"Movements: {movement_count}", (50, y),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+
+cv2.putText(report_screen, "Press D to Download PDF | ESC to Exit",
+            (120, 450),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+
+cv2.imshow("Report Summary", report_screen)
+
+# ----------------------------------------
+# WAIT FOR INPUT
+# ----------------------------------------
+while True:
+    key = cv2.waitKey(0)
+
+    if key == ord('d') or key == ord('D'):
+        print("Generating PDF...")
+
+        doc = SimpleDocTemplate("patient_report.pdf")
+        styles = getSampleStyleSheet()
+
+        content = []
+
+        content.append(Paragraph(
+            "<b><font size=18 color='blue'>Patient Monitoring Report</font></b>",
+            styles["Title"]
+        ))
+        content.append(Spacer(1, 15))
+
+        content.append(Paragraph("<b>Summary</b>", styles["Heading2"]))
+        content.append(Spacer(1, 10))
+
+        content.append(Paragraph(
+            f"Total Monitoring Time: <b>{total_time:.2f} seconds</b>",
+            styles["Normal"]
+        ))
+
+        content.append(Paragraph(
+            f"Total Movements: <font color='red'><b>{movement_count}</b></font>",
+            styles["Normal"]
+        ))
+
+        content.append(Spacer(1, 15))
+
+        content.append(Paragraph("<b>Pose Duration Analysis</b>", styles["Heading2"]))
+        content.append(Spacer(1, 10))
+
+        table_data = [["Posture", "Duration (sec)"]]
+
+        for p, t in pose_time.items():
+            table_data.append([p, f"{t:.2f}"])
+
+        table = Table(table_data, colWidths=[200, 150])
+
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.blue),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ]))
+
+        content.append(table)
+        content.append(Spacer(1, 20))
+
+        content.append(Paragraph("<b>Posture Sequence</b>", styles["Heading2"]))
+        content.append(Spacer(1, 10))
+
+        content.append(Paragraph(
+            " → ".join(pose_sequence),
+            styles["Normal"]
+        ))
+
+        content.append(Spacer(1, 20))
+
+        content.append(Paragraph("<b>Movement Trend</b>", styles["Heading2"]))
+        content.append(Spacer(1, 10))
+
+        content.append(Image(graph_path, width=450, height=220))
+
+        doc.build(content)
+
+        print("✅ PDF Downloaded: patient_report.pdf")
+        break
+
+    elif key == 27:
+        break
 
 cap.release()
 cv2.destroyAllWindows()
